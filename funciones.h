@@ -14,11 +14,11 @@ typedef struct
     int total;
 } articulos_t;
 
-void carArt(articulos_t articulos[]);
-void mostArt(articulos_t articulos[]);
-void ordArt(articulos_t articulos[]);
+void carArt(articulos_t *articulos);
+void mostArt(articulos_t *articulos);
+void ordArt(articulos_t *articulos);
 
-int buscArt(articulos_t articulos[], char descripcion[]);
+int buscArt(articulos_t *articulos, char *descripcion);
 void calcT(articulos_t *articulo);
 void intercambiarArticulos(articulos_t *a, articulos_t *b);
 

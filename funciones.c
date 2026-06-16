@@ -2,11 +2,12 @@
 #include <string.h>
 #include "funciones.h"
 
-void carArt(articulos_t articulos[])
+void carArt(articulos_t *articulos)
 {
     int opcion = 1;
     int sucursal, cantidad, pos;
     char descripcion[90];
+    articulos_t *articulo_actual;
 
     while (opcion == 1)
     {
@@ -21,9 +22,11 @@ void carArt(articulos_t articulos[])
             return;
         }
 
-        if (articulos[pos].descripcion[0] == '\0')
+        articulo_actual = articulos + pos;
+
+        if (*(articulo_actual->descripcion) == '\0')
         {
-            strcpy(articulos[pos].descripcion, descripcion);
+            strcpy(articulo_actual->descripcion, descripcion);
         }
 
         printf("Ingrese sucursal (1, 2 o 3): ");
@@ -38,69 +41,83 @@ void carArt(articulos_t articulos[])
         printf("Ingrese cantidad: ");
         scanf("%d", &cantidad);
 
-        articulos[pos].cantidad_sucursal[sucursal - 1] = cantidad;
-        calcT(&articulos[pos]);
+        *(articulo_actual->cantidad_sucursal + sucursal - 1) = cantidad;
+        calcT(articulo_actual);
 
         printf("Desea cargar otro articulo? 1-Si 2-No: ");
         scanf("%d", &opcion);
     }
 }
 
-void mostArt(articulos_t articulos[])
+void mostArt(articulos_t *articulos)
 {
-    int i = 0;
+    articulos_t *actual = articulos;
+    articulos_t *fin = articulos + CANT_ARTICULOS;
 
     printf("Articulo\tSucursal 1\tSucursal 2\tSucursal 3\tTotal\n");
 
-    while (i < CANT_ARTICULOS && articulos[i].descripcion[0] != '\0')
+    while (actual < fin && *(actual->descripcion) != '\0')
     {
         printf("%s\t\t%d\t\t%d\t\t%d\t\t%d\n",
-               articulos[i].descripcion,
-               articulos[i].cantidad_sucursal[SUCURSAL_1],
-               articulos[i].cantidad_sucursal[SUCURSAL_2],
-               articulos[i].cantidad_sucursal[SUCURSAL_3],
-               articulos[i].total);
-        i++;
+               actual->descripcion,
+               *(actual->cantidad_sucursal + SUCURSAL_1),
+               *(actual->cantidad_sucursal + SUCURSAL_2),
+               *(actual->cantidad_sucursal + SUCURSAL_3),
+               actual->total);
+        actual++;
     }
 }
 
-void ordArt(articulos_t articulos[])
+void ordArt(articulos_t *articulos)
 {
     int i, j;
+    articulos_t *actual;
+    articulos_t *siguiente;
 
     for (i = 0; i < CANT_ARTICULOS - 1; i++)
     {
         for (j = 0; j < CANT_ARTICULOS - 1 - i; j++)
         {
-            if (articulos[j].total < articulos[j + 1].total)
+            actual = articulos + j;
+            siguiente = actual + 1;
+
+            if (actual->total < siguiente->total)
             {
-                intercambiarArticulos(&articulos[j], &articulos[j + 1]);
+                intercambiarArticulos(actual, siguiente);
             }
         }
     }
 }
 
-int buscArt(articulos_t articulos[], char descripcion[])
+int buscArt(articulos_t *articulos, char *descripcion)
 {
     int i;
-    int libre = -1;
+    articulos_t *actual;
+    articulos_t *libre = NULL;
 
     for (i = 0; i < CANT_ARTICULOS; i++)
     {
-        if (articulos[i].descripcion[0] == '\0')
+        actual = articulos + i;
+
+        if (*(actual->descripcion) == '\0')
         {
-            if (libre == -1)
+            if (libre == NULL)
             {
-                libre = i;
+                libre = actual;
             }
         }
-        else if (strcmp(articulos[i].descripcion, descripcion) == 0)
+        else if (strcmp(actual->descripcion, descripcion) == 0)
         {
             return i;
         }
     }
 
-    return libre;
+    if (libre == NULL)
+    {
+        return -1;
+    }
+
+    return libre - articulos;
 }
 
 void calcT(articulos_t *articulo)
@@ -111,7 +128,7 @@ void calcT(articulos_t *articulo)
 
     for (i = 0; i < 3; i++)
     {
-        articulo->total += articulo->cantidad_sucursal[i];
+        articulo->total += *(articulo->cantidad_sucursal + i);
     }
 }
 
